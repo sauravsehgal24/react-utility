@@ -8,15 +8,15 @@
 
 ## validator
 
-### validator is a helper utility to easily scope your form fields and validate them inrespect to the state (of form filed) mutation
+### validator is a helper utility to easily scope your form fields and validate them in respect to the state (of form field) mutation
 
 #### Supported validation rules: [email, required, containsSpecialChars, containsUpperCaseChars, containsLowerCaseChars, containsNumbers, any, string, uppercaseString, lowercaseString, numbers, specialChars, number, char, upperCaseChar, lowerCaseChar]
 
 #### NOTE: date, min, and max are also supported but the way they are used is different from those mentioned above:
 
-- "date:" -> ```data-validation-rules={["date:mm/dd/yyyy"]}
-- "min:" -> ```data-validation-rules={["min:4"]}
-- "min:" -> ```data-validation-rules={["max:8"]}
+- "date:" -> `data-validation-rules={["date:mm/dd/yyyy"]}`
+- "min:" -> `data-validation-rules={["min:4"]}`
+- "min:" -> `data-validation-rules={["max:8"]}`
 
 #### DEMO
 
@@ -24,7 +24,7 @@
 import React, {useState} from 'react';
 
 const SomeComponent = () =>{
-    const {validate, getValidationScopeResult} = createValidationScopes(["LoginForm", "RegistrationForm", "SurveyForm"])
+    const {validate, getValidationScopeResult} = createValidationScopes(["LoginForm", "RegistrationForm"])
 
     const [name, setName] = useState("")
     const [email, setEmail] = useState("")
@@ -37,6 +37,7 @@ const SomeComponent = () =>{
             // Perform submit
         }
     }
+
     return(
         <div>
             <form id="registrationForm">
@@ -47,7 +48,7 @@ const SomeComponent = () =>{
                     data-validation-name="nameField"
                     data-validation-rules={["required","string"]}
                     data-validation-message="Validation failed for Name field"
-                    onChange={(e)=>{validate(e); setName(e.target.value)}}
+                    onChange={(e)=>{const {validationResult, errorMessage} = validate(e); setName(e.target.value)}} // validate() will return the field validation result and the data-validation-message, so that developer can set the message to the respective field error state variable based on the validation result
                 >
                 <input
                     type="email"

@@ -41,8 +41,8 @@ function _v(e) {
   if (!this[scope]) this[scope] = {};
   this[scope] = { ...this[scope], [name]: validationResult };
   return {
-    message: validationMessage,
-    result: validationResult,
+    errorMessage: validationMessage,
+    validationResult: validationResult,
   };
 }
 
