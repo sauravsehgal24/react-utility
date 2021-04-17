@@ -8,7 +8,8 @@ const validationRules = [
   "containsLowerCaseChars",
   "containsNumbers",
   "any",
-  "limit:",
+  "max:",
+  "min:",
   "string",
   "uppercaseString",
   "lowercaseString",
@@ -47,29 +48,34 @@ function _vsr(scope) {
 function _validate(val, rules) {
   rules.map((rule) => {
     if (
-      rule.toString().includes("limit:") ||
-      rule.toString().includes("date:")
+      rule.toString().includes("min:") ||
+      rule.toString().includes("date:") ||
+      rule.toString().includes("max:")
     ) {
       const patternType = rule.substr(rule.indexOf(":") + 1);
+      const ruleType = rule.substr(0, rule.indexOf(":"));
+      if (!_validateObj[ruleType](val, patternType)) return false;
+    } else {
+      if (!_validateObj[rule](val)) return false;
     }
-    if (!_validate[rule](val)) return false;
   });
   return true;
 }
 
 // -------------------------------------------------------------------
 
-const _validate = {
+const _validateObj = {
   email: _validateEmailType,
   phone: "",
   date: _validateDateType,
   required: _validateRequiredType,
-  "containsSpecialChars:": _validateContainSpecialCharsType,
-  "containsUpperCaseChars:": _validateContainUpperCaseCharsType,
+  containsSpecialChars: _validateContainSpecialCharsType,
+  containsUpperCaseChars: _validateContainUpperCaseCharsType,
   containsLowerCaseChars: _validateContainLowerCaseType,
   containsNumbers: _validateContainNumbersType,
   any: _validateAnyType,
-  limit: _validateWordLimitType,
+  max: _validateWordMaxType,
+  min: _validateWordMinType,
   string: _validateOnlyStringType,
   uppercaseString: _validateOnlyUpperCaseStringType,
   lowercaseString: _validateOnlyLowerCaseStringType,
@@ -87,17 +93,22 @@ function _validateEmailType(val) {
 }
 
 function _validateDateType(val, dateFormat) {
-  const pattern = `^\d{1,2}\/\d{1,2}\/\d{4}`;
-  pattern.concat(`^\d`);
-  switch (dateFormat) {
-    case "mm/dd/yyyy":
-    case "mm/dd/yyyy":
-    case "mm/dd/yyyy":
-    case "mm/dd/yyyy":
-    case "mm/dd/yyyy":
+  let datePattern = dateFormat;
+  const regDateMM = /dd|mm/g;
+  const regSpecialCharSlash = /\//g;
+  const regSpecialCharHighpen = /-/g;
+  const regSpecialCharDot = /\./g;
+  datePattern = datePattern.replace(/yyyy/g, `\\d{4}`);
+  datePattern = datePattern.replaceAll(regDateMM, `\\d{1,2}`);
+  if (datePattern.includes(`.`)) {
+    datePattern = datePattern.replaceAll(regSpecialCharDot, `\\.`);
+  } else if (datePattern.includes(`-`)) {
+    datePattern = datePattern.replaceAll(regSpecialCharHighpen, `\\-`);
   }
-
-  const regExp = new RegExp(/^(\w*)\@(\w*)\.([a-z])*$/g);
+  if (datePattern.includes(`/`)) {
+    datePattern = datePattern.replaceAll(regSpecialCharSlash, `\\/`);
+  }
+  const regExp = new RegExp(datePattern);
   return regExp.test(val);
 }
 
@@ -130,7 +141,13 @@ function _validateAnyType(val) {
   return regExp.test(val);
 }
 
-function _validateWordLimitType(val, wordLimit) {
+function _validateWordMaxType(val, wordLimit) {
+  const pattern = `.{0,${wordLimit}}`;
+  const regExp = new RegExp(pattern);
+  return regExp.test(val);
+}
+
+function _validateWordMinType(val, wordLimit) {
   const pattern = `.{${wordLimit},}`;
   const regExp = new RegExp(pattern);
   return regExp.test(val);
