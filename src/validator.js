@@ -1,6 +1,5 @@
 const validationRules = [
   "email",
-  "phone",
   "date:",
   "required",
   "containsSpecialChars",
@@ -21,7 +20,11 @@ const validationRules = [
   "lowerCaseChar",
 ];
 
-function createValidationScopes(vScopes) {
+function createValidationScopes(_vScopes) {
+  let vScopes = {};
+  _vScopes.map((scope) => {
+    vScopes[scope] = undefined;
+  });
   return {
     validate: _v.bind(vScopes),
     getValidationScopeResult: _vsr.bind(vScopes),
@@ -32,9 +35,11 @@ function _v(e) {
   const validationRules = e.target.getAttribute("data-validation-rules");
   const validationMessage = e.target.getAttribute("data-validation-message");
   const scope = e.target.getAttribute("data-validation-scope");
+  const name = e.target.getAttribute("data-validation-name");
   const val = e.target.value || e.target.getAttribute("value");
   const validationResult = _validate(val, validationRules);
-  this[scope] = this[scope] && validationResult;
+  if (!this[scope]) this[scope] = {};
+  this[scope] = { ...this[scope], [name]: validationResult };
   return {
     message: validationMessage,
     result: validationResult,
@@ -42,10 +47,15 @@ function _v(e) {
 }
 
 function _vsr(scope) {
-  return this[scope];
+  if (!this[scope]) return false;
+  Object.keys(this[scope]).map((nameKey) => {
+    if (!this[scope][nameKey]) return false;
+  });
+  return true;
 }
 
-function _validate(val, rules) {
+function _validate(val, _rules) {
+  const rules = _rules.split(",");
   rules.map((rule) => {
     if (
       rule.toString().includes("min:") ||
